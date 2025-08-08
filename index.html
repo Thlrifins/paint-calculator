@@ -1,180 +1,71 @@
 <!DOCTYPE html>
 <html lang="th">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>คำนวณปริมาณการใช้งานสี TOA</title>
-  <style>
-    body {
-      font-family: 'Segoe UI', sans-serif;
-      margin: 0;
-      background: #f8f9fb;
-      color: #333;
-    }
-    .container {
-      max-width: 100%;
-      width: 100%;
-      padding: 20px;
-      box-sizing: border-box;
-    }
-    h2 {
-      color: #003087;
-      text-align: center;
-    }
-    label {
-      display: block;
-      margin-top: 15px;
-    }
-    input, select {
-      width: 100%;
-      padding: 10px;
-      margin-top: 5px;
-      border: 1px solid #ccc;
-      border-radius: 5px;
-      box-sizing: border-box;
-    }
-    .section {
-      background: #fff;
-      padding: 20px;
-      margin-top: 20px;
-      border-radius: 10px;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    }
-    .output-box {
-      background: #003087;
-      color: white;
-      padding: 20px;
-      margin-top: 15px;
-      border-radius: 10px;
-      font-size: 18px;
-      text-align: center;
-    }
-    button {
-      background-color: #0070c0;
-      color: white;
-      padding: 12px;
-      border: none;
-      width: 100%;
-      border-radius: 5px;
-      font-size: 16px;
-      margin-top: 20px;
-      cursor: pointer;
-    }
-    button:hover {
-      background-color: #005da3;
-    }
-    .note {
-      font-size: 12px;
-      color: #777;
-      margin-top: 10px;
-    }
-    .wall-group {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      margin-top: 10px;
-    }
-    .wall-input {
-      flex: 1 1 100%;
-    }
-    @media (min-width: 600px) {
-      .wall-input {
-        flex: 1 1 48%;
-      }
-    }
-  </style>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>คำนวณปริมาณสี TOA (ผนัง / ฝ้า)</title>
+  <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-<div class="container">
-  <h2>คำนวณปริมาณการใช้งาน</h2>
+  <div class="container">
+    <div class="card">
+      <h2>คำนวณปริมาณสี TOA</h2>
 
-  <div class="section">
-    <label>เลือกพื้นที่</label>
-    <select id="areaType">
-      <option value="wall">ผนัง</option>
-      <option value="ceiling">ฝ้าเพดาน</option>
-    </select>
-
-    <div id="wallsContainer">
-      <div class="wall-group">
-        <input type="number" class="wall-input wall-width" placeholder="กว้าง (เมตร)">
-        <input type="number" class="wall-input wall-height" placeholder="สูง/ยาว (เมตร)">
+      <div class="field">
+        <label for="areaType">ประเภทพื้นที่</label>
+        <select id="areaType" aria-label="เลือกประเภทพื้นที่">
+          <option value="wall">ผนัง</option>
+          <option value="ceiling">ฝ้าเพดาน</option>
+        </select>
       </div>
+
+      <div class="field add-area">
+        <h3 id="addTitle">เพิ่มผนัง</h3>
+        <div class="input-row">
+          <div class="input-col">
+            <label id="labelWidth" for="width">กว้าง (เมตร)</label>
+            <input type="number" id="width" step="0.01" min="0" placeholder="เช่น 5.00" />
+          </div>
+          <div class="input-col">
+            <label id="labelHeight" for="height">สูง (เมตร)</label>
+            <input type="number" id="height" step="0.01" min="0" placeholder="เช่น 3.00" />
+          </div>
+        </div>
+        <div class="controls">
+          <button id="addBtn" class="btn btn-primary">➕ เพิ่มแถว</button>
+          <button id="clearBtn" class="btn btn-neutral">🧹 ล้างค่า</button>
+        </div>
+      </div>
+
+      <div class="field">
+        <h3>รายการพื้นที่</h3>
+        <ul id="wallList" aria-live="polite" class="list"></ul>
+      </div>
+
+      <div class="field">
+        <label for="coatCount">จำนวนเที่ยวทับหน้า (Coat count)</label>
+        <input type="number" id="coatCount" min="1" step="1" value="2" />
+      </div>
+
+      <div class="field">
+        <label for="exclude">พื้นที่ที่ไม่ทา (ประตู/หน้าต่าง) — รวม (ตร.ม.)</label>
+        <input type="number" id="exclude" step="0.01" min="0" placeholder="เช่น 2.50" />
+      </div>
+
+      <div id="resultWrapper" class="result-wrapper" aria-live="polite" style="display:none;">
+        <h3>ประมาณการใช้สี</h3>
+        <div id="paintResult" class="output">—</div>
+        <div class="note" id="noteBox" role="note">
+          * หมายเหตุ: ปริมาณสีที่แสดงผลได้หักพื้นที่ประตู/หน้าต่างแล้ว (ถ้าใส่ค่า)<br><br>
+          <strong>สำหรับห้องใหม่</strong><br>
+          - ทาสีรองพื้นจำนวน 1 เที่ยว ทิ้งไว้อย่างน้อย 2 ชั่วโมง ก่อนทาสีทับหน้า<br>
+          - ทาสีทับหน้าจำนวน 2 เที่ยว โดยทาสีทับหน้ารอบแรกทิ้งไว้ 2 ชั่วโมง แล้วทาสีทับหน้ารอบที่ 2 เพื่อการกลบมิดที่ดีเยี่ยม
+        </div>
+      </div>
+
     </div>
-
-    <button onclick="addWall()">➕ เพิ่มผนัง</button>
-
-    <label>พื้นที่ที่ไม่ต้องการทา (เช่น หน้าต่าง/ประตู)</label>
-    <input type="number" id="exclude" placeholder="เช่น 2">
-
-    <label>จำนวนเที่ยวที่ต้องการทา</label>
-    <input type="number" id="coatCount" placeholder="เช่น 2" value="2" min="1">
-
-    <div class="output-box" id="totalArea">พื้นที่ที่ทาสีจริง: 0.00 ตร.ม.</div>
-
-    <button onclick="calculatePaint()">แสดงผลลัพธ์</button>
   </div>
 
-  <div class="section" id="resultSection" style="display:none;">
-    <h3>ประมาณการใช้สี</h3>
-    <div class="output-box" id="paintResult">สีรองพื้น: 0 แกลลอน | สีทับหน้า: 0 แกลลอน</div>
-    <div class="note">
-      * สีรองพื้นครอบคลุม 1 รอบ ≈ 38 ตร.ม./แกลลอน<br>
-      * สีทับหน้าครอบคลุม ≈ 19 ตร.ม./แกลลอน/เที่ยว (2 เที่ยว ≈ 9.5 ตร.ม./แกลลอน)
-    </div>
-  </div>
-</div>
-
-<script>
-  function addWall() {
-    const container = document.getElementById('wallsContainer');
-    const div = document.createElement('div');
-    div.className = 'wall-group';
-    div.innerHTML = `
-      <input type="number" class="wall-input wall-width" placeholder="กว้าง (เมตร)">
-      <input type="number" class="wall-input wall-height" placeholder="สูง/ยาว (เมตร)">
-    `;
-    container.appendChild(div);
-  }
-
-  function calculatePaint() {
-    const areaType = document.getElementById('areaType').value;
-    const exclude = parseFloat(document.getElementById('exclude').value) || 0;
-    const coatCount = parseInt(document.getElementById('coatCount').value) || 1;
-
-    let netArea = 0;
-
-    if (areaType === 'wall') {
-      const widths = document.querySelectorAll('.wall-width');
-      const heights = document.querySelectorAll('.wall-height');
-      for (let i = 0; i < widths.length; i++) {
-        const w = parseFloat(widths[i].value);
-        const h = parseFloat(heights[i].value);
-        if (!isNaN(w) && !isNaN(h)) {
-          netArea += w * h;
-        }
-      }
-    } else {
-      const w = parseFloat(document.querySelector('.wall-width').value);
-      const h = parseFloat(document.querySelector('.wall-height').value);
-      if (!isNaN(w) && !isNaN(h)) {
-        netArea = w * h;
-      }
-    }
-
-    netArea = Math.max(0, netArea - exclude);
-
-    document.getElementById('totalArea').innerText = `พื้นที่ที่ทาสีจริง: ${netArea.toFixed(2)} ตร.ม.`;
-
-    const primerCoverage = 38; // ตร.ม./แกลลอน
-    const topcoatCoverage = 19 / coatCount; // ต่อเที่ยว
-
-    const primerGallons = netArea / primerCoverage;
-    const topcoatGallons = netArea / topcoatCoverage;
-
-    document.getElementById('paintResult').innerText = `สีรองพื้น: ${primerGallons.toFixed(1)} แกลลอน | สีทับหน้า: ${topcoatGallons.toFixed(1)} แกลลอน`;
-    document.getElementById('resultSection').style.display = 'block';
-  }
-</script>
+  <script src="app.js" defer></script>
 </body>
 </html>
