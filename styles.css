@@ -1,0 +1,94 @@
+/* Reset & base */
+* { box-sizing: border-box; }
+body {
+  font-family: 'Segoe UI', Tahoma, sans-serif;
+  margin: 0;
+  background: #f2f6fb;
+  color: #222;
+  -webkit-font-smoothing: antialiased;
+}
+.container {
+  max-width: 520px;
+  margin: 18px auto;
+  padding: 18px;
+}
+.card {
+  background: #fff;
+  border-radius: 12px;
+  padding: 16px;
+  box-shadow: 0 8px 28px rgba(8,35,64,0.06);
+}
+h2 { color: #0d47a1; margin: 0 0 10px 0; font-weight: 700; }
+h3 { color: #1565c0; margin: 10px 0; font-weight: 600; }
+
+/* Fields */
+.field { margin-top: 12px; }
+label { display:block; font-size:0.95rem; color:#444; margin-bottom:6px; }
+
+select, input[type="number"] {
+  width:100%;
+  padding:10px 12px;
+  border-radius:10px;
+  border:1.25px solid #d7e9ff;
+  font-size:1rem;
+  outline:none;
+}
+select:focus, input[type="number"]:focus { border-color:#1976d2; }
+
+/* Add area inputs */
+.input-row { display:flex; gap:10px; margin-top:8px; }
+.input-col { flex:1; min-width:0; }
+
+/* Buttons */
+.controls { display:flex; gap:10px; margin-top:10px; }
+.btn { border:none; border-radius:10px; padding:10px; font-weight:700; cursor:pointer; color:white; }
+.btn-primary { background:#1976d2; }
+.btn-primary:hover { background:#1565c0; }
+.btn-neutral { background:#9e9e9e; }
+.btn-neutral:hover { background:#616161; }
+.btn-danger { background:#e53935; padding:8px 10px; }
+
+/* List */
+.list { list-style:none; padding:0; margin:0; }
+.list li {
+  background:#eaf4ff;
+  border-radius:10px;
+  padding:10px;
+  margin-bottom:8px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:8px;
+  font-weight:600;
+}
+.wall-meta { color:#0d47a1; }
+
+/* Output */
+.result-wrapper { margin-top:14px; }
+.output {
+  margin-top:8px;
+  border-radius:12px;
+  padding:12px;
+  background: linear-gradient(180deg,#1565c0,#0d47a1);
+  color:white;
+  text-align:center;
+  font-weight:700;
+  box-shadow:0 8px 20px rgba(13,71,161,0.18);
+}
+
+/* Note */
+.note {
+  margin-top:12px;
+  background:#fffbe6;
+  padding:10px;
+  border-radius:8px;
+  color:#5d4037;
+  font-size:0.95rem;
+  line-height:1.4;
+}
+
+/* Responsive */
+@media (max-width:420px){
+  .input-row { flex-direction:column; }
+  .controls { flex-direction:column; }
+}
