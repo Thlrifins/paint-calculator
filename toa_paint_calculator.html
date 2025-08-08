@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>คำนวณปริมาณการใช้งานสี TOA</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      margin: 0;
+      background: #f8f9fb;
+      color: #333;
+    }
+    .container {
+      max-width: 100%;
+      width: 100%;
+      padding: 20px;
+      box-sizing: border-box;
+    }
+    h2 {
+      color: #003087;
+      text-align: center;
+    }
+    label {
+      display: block;
+      margin-top: 15px;
+    }
+    input, select {
+      width: 100%;
+      padding: 10px;
+      margin-top: 5px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      box-sizing: border-box;
+    }
+    .section {
+      background: #fff;
+      padding: 20px;
+      margin-top: 20px;
+      border-radius: 10px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .output-box {
+      background: #003087;
+      color: white;
+      padding: 20px;
+      margin-top: 15px;
+      border-radius: 10px;
+      font-size: 18px;
+      text-align: center;
+    }
+    button {
+      background-color: #0070c0;
+      color: white;
+      padding: 12px;
+      border: none;
+      width: 100%;
+      border-radius: 5px;
+      font-size: 16px;
+      margin-top: 20px;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #005da3;
+    }
+    .note {
+      font-size: 12px;
+      color: #777;
+      margin-top: 10px;
+    }
+    .wall-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 10px;
+    }
+    .wall-input {
+      flex: 1 1 100%;
+    }
+    @media (min-width: 600px) {
+      .wall-input {
+        flex: 1 1 48%;
+      }
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+  <h2>คำนวณปริมาณการใช้งาน</h2>
+
+  <div class="section">
+    <label>เลือกพื้นที่</label>
+    <select id="areaType">
+      <option value="wall">ผนัง</option>
+      <option value="ceiling">ฝ้าเพดาน</option>
+    </select>
+
+    <div id="wallsContainer">
+      <div class="wall-group">
+        <input type="number" class="wall-input wall-width" placeholder="กว้าง (เมตร)">
+        <input type="number" class="wall-input wall-height" placeholder="สูง/ยาว (เมตร)">
+      </div>
+    </div>
+
+    <button onclick="addWall()">➕ เพิ่มผนัง</button>
+
+    <label>พื้นที่ที่ไม่ต้องการทา (เช่น หน้าต่าง/ประตู)</label>
+    <input type="number" id="exclude" placeholder="เช่น 2">
+
+    <label>จำนวนเที่ยวที่ต้องการทา</label>
+    <input type="number" id="coatCount" placeholder="เช่น 2" value="2" min="1">
+
+    <div class="output-box" id="totalArea">พื้นที่ที่ทาสีจริง: 0.00 ตร.ม.</div>
+
+    <button onclick="calculatePaint()">แสดงผลลัพธ์</button>
+  </div>
+
+  <div class="section" id="resultSection" style="display:none;">
+    <h3>ประมาณการใช้สี</h3>
+    <div class="output-box" id="paintResult">สีรองพื้น: 0 แกลลอน | สีทับหน้า: 0 แกลลอน</div>
+    <div class="note">
+      * สีรองพื้นครอบคลุม 1 รอบ ≈ 38 ตร.ม./แกลลอน<br>
+      * สีทับหน้าครอบคลุม ≈ 19 ตร.ม./แกลลอน/เที่ยว (2 เที่ยว ≈ 9.5 ตร.ม./แกลลอน)
+    </div>
+  </div>
+</div>
+
+<script>
+  function addWall() {
+    const container = document.getElementById('wallsContainer');
+    const div = document.createElement('div');
+    div.className = 'wall-group';
+    div.innerHTML = `
+      <input type="number" class="wall-input wall-width" placeholder="กว้าง (เมตร)">
+      <input type="number" class="wall-input wall-height" placeholder="สูง/ยาว (เมตร)">
+    `;
+    container.appendChild(div);
+  }
+
+  function calculatePaint() {
+    const areaType = document.getElementById('areaType').value;
+    const exclude = parseFloat(document.getElementById('exclude').value) || 0;
+    const coatCount = parseInt(document.getElementById('coatCount').value) || 1;
+
+    let netArea = 0;
+
+    if (areaType === 'wall') {
+      const widths = document.querySelectorAll('.wall-width');
+      const heights = document.querySelectorAll('.wall-height');
+      for (let i = 0; i < widths.length; i++) {
+        const w = parseFloat(widths[i].value);
+        const h = parseFloat(heights[i].value);
+        if (!isNaN(w) && !isNaN(h)) {
+          netArea += w * h;
+        }
+      }
+    } else {
+      const w = parseFloat(document.querySelector('.wall-width').value);
+      const h = parseFloat(document.querySelector('.wall-height').value);
+      if (!isNaN(w) && !isNaN(h)) {
+        netArea = w * h;
+      }
+    }
+
+    netArea = Math.max(0, netArea - exclude);
+
+    document.getElementById('totalArea').innerText = `พื้นที่ที่ทาสีจริง: ${netArea.toFixed(2)} ตร.ม.`;
+
+    const primerCoverage = 38; // ตร.ม./แกลลอน
+    const topcoatCoverage = 19 / coatCount; // ต่อเที่ยว
+
+    const primerGallons = netArea / primerCoverage;
+    const topcoatGallons = netArea / topcoatCoverage;
+
+    document.getElementById('paintResult').innerText = `สีรองพื้น: ${primerGallons.toFixed(1)} แกลลอน | สีทับหน้า: ${topcoatGallons.toFixed(1)} แกลลอน`;
+    document.getElementById('resultSection').style.display = 'block';
+  }
+</script>
+</body>
+</html>
